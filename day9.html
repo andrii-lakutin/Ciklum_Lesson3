@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<script type="text/javascript">
+
+function httpGet(url) {
+	return new Promise((resolve, reject) => {
+   		var xhr = new XMLHttpRequest();
+   		xhr.open('GET', url, true);
+   		xhr.onload = function() {
+   		  if (this.status == 200) {
+   		    resolve(this.response);
+   		  } else {
+   		    var error = new Error(this.statusText);
+   		    error.code = this.status;
+   		    reject(error);
+   		  }
+   		}
+   		xhr.send();
+  	});
+};
+httpGet("./day9.txt")
+	.then(
+	response => {
+		findTheDistance(response);
+	},
+	error => console.log(`Rejected: ${error}`)
+	);
+
+//some data transformation for comfortable work
+function makeDataPretty(data){
+	var dataArray = data.split('\n');
+	var result = [];
+	dataArray.forEach((item,i,arr)=>{
+		var words = item.split(' ');
+		result.push([words[0],words[2], +words[4]]);
+	});
+	return result;
+}
+
+
+function findTheDistance (data){
+	data = makeDataPretty(data);
+	//make a list of all cities using ES6 Set() for uniq only items
+	var allCitiesSet = new Set();
+	data.forEach((item)=>{
+		allCitiesSet.add(item[0]);
+		allCitiesSet.add(item[1]);
+	});
+	//convert set to array
+	var allCitiesArr = [...allCitiesSet];
+
+	//calculate some nubmers  WIKI: Travelling salesman problem (optimization by nearest neighbour (NN) algorithm)
+	var result = [];
+	var visitedCities = [];
+	function findClosest(city){
+		//array which contain all distances from CURRENT city to anothers
+		var distances = [];
+		//fill that array
+		for (var i = 0; i < data.length; i++) {
+				//CHECK ONLY UNVISITED CITIES
+				//find current city in data, AND IF IT DATA-NEIGHBOR WAS NOT VISITED  
+			if (city === data[i][0] && visitedCities.toString().indexOf(data[i][1]) === -1||
+				city === data[i][1] && visitedCities.toString().indexOf(data[i][0]) === -1){
+				// add data to distances 
+				distances.push(data[i][2]);
+			}
+		}
+		//choose the CLOSEST option
+		var closest = Math.min.apply(null, distances);
+
+
+		for (var j = 0; j < data.length; j++) {
+			if (closest === data[j][2]) {
+				//if city from the left side of data
+				if (city === data[j][0]) {
+					//IF CURRENT CITY IS VISITED - IT MEANS WE AT THE END OF THE PATH
+					if (visitedCities.toString().indexOf(city) === -1) {
+						//push closest distance into result every time
+						result.push(closest);
+						//make city visited
+						visitedCities.push(city);
+						//RECURCIVLY FIND CLOSEST CITIES UNTILL DESTINATION
+						findClosest(data[j][1]);
+					}
+				//if city from the right side of data	 	
+				} else if (city === data[j][1]){
+					//IF CURRENT CITY IS VISITED - IT MEANS WE AT THE END OF THE PATH
+					if (visitedCities.toString().indexOf(city) === -1) {
+						//push closest distance into result every time
+						result.push(closest);
+						//make city visited
+						visitedCities.push(city);
+						//RECURCIVLY FIND CLOSEST CITIES UNTILL DESTINATION
+						findClosest(data[j][0]);
+					} 
+				}
+			}
+		}
+	}
+
+	//checking distances by different start points and closest-city oriented way
+	for (var i = 0; i < allCitiesArr.length; i++) {
+		switch (allCitiesArr[i]){
+   		case 'Faerun':
+   			visitedCities = [];
+   		    findClosest("Faerun");
+   		    break;
+   		case 'Norrath':
+   			visitedCities = [];
+   		    findClosest("Norrath");
+   		    break;
+   		case 'Tristram':
+   			visitedCities = [];
+   		    findClosest("Tristram");
+   		    break;
+   		case 'AlphaCentauri':
+   			visitedCities = [];
+   		    findClosest("AlphaCentauri");
+   		    break;
+   		case 'Arbre':
+   			visitedCities = [];
+   		    findClosest("Arbre");
+   		    break;
+   		case 'Snowdin':
+   			visitedCities = [];
+   		    findClosest("Snowdin");
+   		    break;
+   		case 'Tambi':
+   			visitedCities = [];
+   			findClosest("Tambi");
+   		    break;
+   		case 'Straylight':
+   			visitedCities = [];
+   			findClosest("Straylight");
+   		    break;
+   		default:
+   			break;
+		}
+	}
+
+	//just make 1 number-answer from all data we collect
+	function CreateResult(result){
+		var arrOfAnswers = [];
+		for (var j = 0; j < allCitiesArr.length; j++) {
+			var resultNum = arrOfAnswers.push(result.splice(0, 7).reduce((p,n)=>p+n));
+		}
+		return ANSWER = Math.min.apply(null, arrOfAnswers);
+	}
+	var ANSWER = CreateResult(result);
+	console.log(ANSWER); //207
+}
+
+
+
+</script>
+</body>
+</html>

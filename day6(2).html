@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<p>Answer6(1): 377891</p>
+	<p>Answer6(2): 14110788</p>
+<script type="text/javascript">
+
+function httpGet(url) {
+	return new Promise((resolve, reject) => {
+   		var xhr = new XMLHttpRequest();
+   		xhr.open('GET', url, true);
+   		xhr.onload = function() {
+   		  if (this.status == 200) {
+   		    resolve(this.response);
+   		  } else {
+   		    var error = new Error(this.statusText);
+   		    error.code = this.status;
+   		    reject(error);
+   		  }
+   		}
+   		xhr.send();
+  	});
+};
+
+httpGet("./day6.txt")
+	.then(
+	response => {
+		howManyLights(response);
+	},
+	error => console.log(`Rejected: ${error}`)
+	);
+
+function makeDataPretty(data){
+	var dataArray = data.split('\n');
+	var sorted = [];
+	dataArray.forEach((item,i,arr) => {
+		var aloneString = item.split(' ');
+		//ACTIONS
+		if (aloneString[0] === 'toggle') {
+			sorted.push({   action : aloneString[0],
+							startCoordinates : aloneString[1].split(','),
+							endCoordinates   : aloneString[3].split(',')})
+		} else {
+			sorted.push({   action : aloneString[0] + aloneString[1],
+							startCoordinates : aloneString[2].split(','),
+							endCoordinates   : aloneString[4].split(',')})
+		} 
+	});
+	return sorted;
+}
+
+function howManyLights(data){
+	var result = 0;
+	//get comfortable data
+	var sorted = makeDataPretty(data);
+	//the grid 1000x1000
+	var grid = [];
+	for (let i = 0; i < 1000; i++) {
+		//looks like this now =>  -----------------
+		grid[i] = [];
+		for (let j = 0; j < 1000; j++) {
+			/*						   -----------------			
+									   -----------------
+				looks like this now => -----------------
+									   -----------------
+									   -----------------
+			*/
+			grid[i][j] = 0;
+		}
+	}
+	//let the light show begin!
+	/*	-------+-------			
+		------+++------
+		-----+++++-----
+		----+++++++----
+		---+++++++++---
+	*/
+	for (var i = 0; i < sorted.length; i++) {
+			var item = sorted[i];
+		for (var x = +item.startCoordinates[0]; x <= +item.endCoordinates[0]; x++) {
+			for (var y = +item.startCoordinates[1]; y <= +item.endCoordinates[1]; y++) {
+				switch (item.action) {
+	
+    	            case "turnon":
+    	                grid[x][y] += 1
+    	                break
+	
+    	            case "turnoff":
+    	            	if (grid[x][y] > 0) 
+    	            		grid[x][y] -= 1	
+    	            	else
+    	            		grid[x][y] = 0
+    	                break
+ 	
+    	            case "toggle":
+    	                grid[x][y] += 2
+
+    	        }
+			}
+		}
+	}
+	//party is end, let's calculate shiny ones
+	for (var i = 0; i < 1000; i++) {
+		for (var j = 0; j < 1000; j++) {
+			if (grid[i][j] > 0) {
+				result += grid[i][j];
+			}
+		}
+	}
+	console.log(result);
+	return result;
+}
+</script>
+
+</body>
+</html>
